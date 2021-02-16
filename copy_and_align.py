@@ -14,7 +14,7 @@ import pretty_midi
 # midi.mid in same subdirectory will be regarded as score file.
 # make alignment result files in same directory. read Nakamura's manual for detail.
 
-INPUT_DIR = '/home/ilcobo2/chopin'
+INPUT_DIR = '/Users/Da/Documents/Github/musicXML-parser/chopin_cleaned/'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_dir", default=INPUT_DIR,
@@ -36,11 +36,11 @@ midi_files = [el.strip() for el in lines]
 
 # read from folder
 midi_files = utils.find_files_in_subdir(INPUT_DIR, '*.mid')
+print(midi_files)
 
 n_match = 0
 n_unmatch = 0
 for midi_file in midi_files:
-    
     if 'midi.mid' in midi_file or 'XP.mid' in midi_file or 'midi_cleaned.mid' in midi_file:
         continue
 
@@ -56,8 +56,10 @@ for midi_file in midi_files:
     score_midi = os.path.join(file_folder, 'midi_cleaned.mid')
     if not os.path.isfile(score_midi):
         score_midi = os.path.join(file_folder, 'midi.mid')
+        # TODO: get score_midi filename as input
     print(perform_midi)
     print(score_midi)
+
 
     mid = pretty_midi.PrettyMIDI(score_midi)
 

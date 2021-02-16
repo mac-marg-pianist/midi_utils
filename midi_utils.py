@@ -37,6 +37,7 @@ class SustainPedal:
         return self.end is not None and self.end > self.start
 
 
+
 def elongate_offset_by_pedal(midi_obj):
     """elongate off set of notes in midi_object, according to sustain pedal length.
 
@@ -53,9 +54,66 @@ def elongate_offset_by_pedal(midi_obj):
         for note in instrument.notes:
             if pedal.start < note.end <= pedal.end:
                 note.end = pedal.end
-
     return midi_obj
 
+def cal_pedal_refresh_in_note(note, notes, pedals, pedals_positions, pd_ind1, pd_ind2):
+    note_index = notes.index(note)
+    search_time_end = note.end
+    lowest_pedal_value = note.pedal_at_start
+    lowest_pedal = None
+    # counts only when pedal is pressed at start
+    # if note.pedal_at_start == False:
+    #     return False, 0
+
+    if note_index < len(notes) - 1:
+        next_note = notes[note_index+1]
+        if next_note.start < note.end:
+            pd_ind2 = binaryIndex(pedals_positions, next_note.start)
+            search_time_end = next_note.start
+
+    # check only the pedal between note start and end
+    for i in range(pd_ind1, pd_ind2):
+        pedal = pedals[i]
+        if pedal.value < lowest_pedal_value:
+            lowest_pedal_value = pedal.value
+            lowest_pedal = pedal
+    if lowest_pedal:
+        time_ratio = (lowest_pedal.start - note.start) / (note.end - note.start)
+        return lowest_pedal_value, time_ratio
+    else:
+        return lowest_pedal_value, 0
+
+def cal_pedal_cut(note, notes, pedals, pedals_positions, threshold=30):
+    note_index = notes.index(note)
+    lowest_pedal_value = note.pedal_at_start
+    lowest_pedal = None
+    if note_index == 0:
+        return 0, 0
+    #check that there is no activated notes when the note starts
+    prev_notes = notes[0:note_index]
+    prev_notes.sort(key=lambda note:note.end)
+    index = -1
+    while index-1 >= -note_index and prev_notes[index].end >= note.start:
+        index += -1
+    # if last_note.end > note.start:
+    #     return False, 0
+
+    last_note = prev_notes[index]
+
+
+    pd1 = binaryIndex(pedals_positions, last_note.end)
+    pd2 = binaryIndex(pedals_positions, note.start)
+    for i in range(pd1, pd2):
+        pedal = pedals[i]
+        if pedal.value < lowest_pedal_value:
+            lowest_pedal_value = pedal.value
+            lowest_pedal = pedal
+
+    if lowest_pedal:
+        time_ratio = (note.start - lowest_pedal.start) / (note.end - note.start)
+        return lowest_pedal_value, time_ratio
+    else:
+        return lowest_pedal_value, 0
 
 def add_pedal_inf_to_notes(midi_obj):
     assert len(midi_obj.instruments) == 1
@@ -372,6 +430,7 @@ def binaryIndex(alist, item):
     return last
 
 
+
 def save_note_pedal_to_CC(midi_obj, bool_pedal=False, disklavier=False):
     # input = pretty midi object with pedal inf embedded in note (e.g. note.pedal_at_start etc.)
     assert len(midi_obj.instruments) == 1
@@ -380,7 +439,6 @@ def save_note_pedal_to_CC(midi_obj, bool_pedal=False, disklavier=False):
     notes.sort(key=lambda note:note.start)
     num_notes = len(notes)
     eps = 0.03  # hyper-parameter
-
     def to_8(value):
         # if value == True:
         #     return 127
@@ -393,6 +451,7 @@ def save_note_pedal_to_CC(midi_obj, bool_pedal=False, disklavier=False):
     for i in range(num_notes):
         note = notes[i]
         next_note = notes[min(i+1, num_notes-1)]
+        
         # print(note.start, note.end, note.pitch, note.pedal_refresh, note.pedal_cut)
         pedal1 = pretty_midi.ControlChange(number=64, value=to_8(note.pedal_at_start), time=note.start-eps)
         pedal2 = pretty_midi.ControlChange(number=64, value=to_8(note.pedal_at_end), time=note.end-eps)
@@ -418,7 +477,6 @@ def save_note_pedal_to_CC(midi_obj, bool_pedal=False, disklavier=False):
         instrument.control_changes.append(pedal4)
         secondary_pedal.append(pedal4)
     primary_pedal.sort(key=lambda x: x.time)
-
 
 
     last_note_end = notes[-1].end
