@@ -545,7 +545,7 @@ def save_note_pedal_to_CC(midi_obj, bool_pedal=False, disklavier=False):
     return midi_obj
 
 
-def save_midi_notes_as_piano_midi(midi_notes, midi_pedals, output_name, bool_pedal=False, disklavier=False, multi_channel=False):
+def save_midi_notes_as_piano_midi(midi_notes, midi_pedals, output_name, bool_pedal=False, disklavier=False, multi_channel=False, tempo_clock=None):
     """ Generate midi file by using received midi notes and midi pedals
 
     Args:
@@ -597,6 +597,11 @@ def save_midi_notes_as_piano_midi(midi_notes, midi_pedals, output_name, bool_ped
 
     piano_midi.instruments[0].control_changes = midi_pedals
 
+    if tempo_clock:
+        piano = pretty_midi.Instrument(program=piano_program)
+        for note in tempo_clock:
+            piano.notes.append(note)
+        piano_midi.instruments.append(piano)
     #
     # if disklavier:
     #     pedals = piano_midi.instruments[0].control_changes
