@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: midi-utils
+Version: 0.0.1
+Summary: python midi handling package
+Home-page: https://github.com/mac-marg-pianist/midi_utils
+Author: Taegyun Kwon
+Author-email: ilcobo2@gmail.com
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/mac-marg-pianist/midi_utils/issue
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+
+UNKNOWN
+

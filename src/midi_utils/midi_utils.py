@@ -1,5 +1,6 @@
 import pretty_midi
 import warnings
+from pathlib import Path
 import numpy as np
 import copy
 
@@ -326,10 +327,11 @@ def to_midi_zero(midi_path, midi_min=21, midi_max=108, save_midi=False, save_nam
         0-type pretty_midi.Pretty_Midi object.
     """
     pretty_midi.pretty_midi.MAX_TICK = 1e10
+    midi_path = Path(midi_path)
     if save_name is None:
-        save_name = midi_path.replace('.mid', '_midi0.mid')
+        save_name = midi_path.parent / midi_path.name.replace('.mid', '_midi0.mid')
 
-    midi = pretty_midi.PrettyMIDI(midi_path)
+    midi = pretty_midi.PrettyMIDI(str(midi_path))
     midi_new = pretty_midi.PrettyMIDI(resolution=1000, initial_tempo=120)
     instrument = pretty_midi.Instrument(0)
     for instruments in midi.instruments:
@@ -402,6 +404,7 @@ def mid2piano_roll(midi_path, pedal=False, onset=False, midi_min=21, midi_max=10
     """
     assert (pedal and onset) is not True, 'pedal + onset is not reasonable'
 
+    midi_path = Path(midi_path)
     if clean_midi:
         mid = to_midi_zero(midi_path, midi_min, midi_max)
     else:
